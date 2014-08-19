@@ -13,13 +13,15 @@ else
 	declare -i CPU="$(cat /proc/cpuinfo | grep processor | wc -l) + 1"
 fi
 
-# Package URL
-PKG_MIRROR="http://www.gnuarm.com"
-
 # Package Verions
-PKG_BINUTILS="binutils-2.17.tar.bz2"
-PKG_GCC411="gcc-4.1.1.tar.bz2"
-PKG_NEWLIB="newlib-1.14.0.tar.gz"
+PKG_NAMES[0]="binutils-2.17.tar.bz2"
+PKG_NAMES[1]="gcc-4.1.1.tar.bz2"
+PKG_NAMES[2]="newlib-1.14.0.tar.gz"
+
+# Package URLs
+PKG_URLS[0]="http://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2"
+PKG_URLS[1]="http://ftp.gnu.org/gnu/gcc/gcc-4.1.1/gcc-4.1.1.tar.bz2"
+PKG_URLS[2]="ftp://sourceware.org/pub/newlib/newlib-1.14.0.tar.gz"
 
 # Package Patches
 PATCH_GCC411_ARMELF="t-arm-elf.patch"
@@ -145,19 +147,19 @@ stage_setup() {
 stage_download() {
 	echo "- Downloading packages"
 
-	for pkg in "$PKG_BINUTILS" "$PKG_GCC411" "$PKG_NEWLIB"; do
+	for pkg in 0 1 2; do
 	
-		if [ -e $TOOLCHAIN_PATH/src/$pkg ];
+		if [ -e $TOOLCHAIN_PATH/src/${PKG_NAMES[$pkg]} ];
 		then
-			echo "  - $pkg exists"
+			echo "  - ${PKG_NAMES[$pkg]} exists"
 		else
 			# Download to a .tmp file so that if the download is interupted
 			# we don't think that the file is downloaded
-			echo "  - Downloading $pkg"
-			log wget $PKG_MIRROR/$pkg -O $TOOLCHAIN_PATH/src/$pkg.tmp
-			checkRet "Failed to retrive $pkg"
-			mv $TOOLCHAIN_PATH/src/$pkg{.tmp,} # move file.tmp to file
-			echo "  - $pkg download complete"
+			echo "  - Downloading ${PKG_NAMES[$pkg]}"
+			log wget ${PKG_URLS[$pkg]} -O $TOOLCHAIN_PATH/src/${PKG_NAMES[$pkg]}.tmp
+			checkRet "Failed to retrive ${PKG_NAMES[$pkg]}"
+			mv $TOOLCHAIN_PATH/src/${PKG_NAMES[$pkg]}{.tmp,} # move file.tmp to file
+			echo "  - ${PKG_NAMES[$pkg]} download complete"
 		fi
 	done
 }
@@ -165,8 +167,8 @@ stage_download() {
 stage_binutils_extract() {
 	echo "- Extracting binutils"
 	cd $TOOLCHAIN_PATH
-	log tar -jxvf $TOOLCHAIN_PATH/src/$PKG_BINUTILS
-	checkRet "Failed to extract package $PKG_BINUTILS"
+	log tar -jxvf $TOOLCHAIN_PATH/src/${PKG_NAMES[0]}
+	checkRet "Failed to extract package ${PKG_NAMES[0]}"
 }
 
 stage_binutils_configure() {
@@ -194,15 +196,15 @@ stage_binutils_install() {
 stage_gcc_extract() {
 	echo "- Extracting GCC"
 	cd $TOOLCHAIN_PATH
-	log tar -jxvf $TOOLCHAIN_PATH/src/$PKG_GCC411
-	checkRet "Failed to extract package $PKG_GCC411"
+	log tar -jxvf $TOOLCHAIN_PATH/src/${PKG_NAMES[1]}
+	checkRet "Failed to extract package ${PKG_NAMES[1]}"
 }
 
 stage_newlib_extract() {
 	echo "- Extracting Newlib dependency for gcc"
 	cd $TOOLCHAIN_PATH
-	log tar -zxvf $TOOLCHAIN_PATH/src/$PKG_NEWLIB
-	checkRet "Failed to extract package $PKG_NEWLIB"
+	log tar -zxvf $TOOLCHAIN_PATH/src/${PKG_NAMES[2]}
+	checkRet "Failed to extract package ${PKG_NAMES[2]}"
 }
 
 stage_gcc_patch() {
